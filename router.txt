@@ -1,0 +1,306 @@
+
+Setup Router:
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <div>Home</div>
+  },
+]);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+   <RouterProvider router={router} />
+  </React.StrictMode>,
+)
+
+Routes:
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+// import App from './App.jsx'
+// import './index.css'
+import Root from "./routes/root";
+
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <div>Home</div>
+    },
+    {
+        path: "/hello",
+        element: <div>Hello</div>
+    },
+    {
+        path: "/howareyou",
+        element: <div>how are you</div>
+      },
+]);
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>,
+)
+...............
+routes/Root.jsx
+export default function Root(){
+  return <div>
+       <h1>Home Page</h1>
+  </div>
+}
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import Root from "./routes/root";
+
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root/>
+    },
+]);
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>,
+)
+...
+Handling NotFound:
+It's always a good idea to know how your app responds to errors early in the project because we all write far more bugs than features when building a new app! Not only will your users get a good experience when this happens, but it helps you during development as well.
+
+ Create an error page component
+
+src/error-page.jsx
+import { useRouteError } from "react-router-dom";
+
+export default function ErrorPage() {
+  const error = useRouteError();
+  console.error(error);
+
+  return (
+    <div id="error-page">
+      <h1>Oops!</h1>
+      <p>Sorry, an unexpected error has occurred.</p>
+      <p>
+        <i>{error.statusText || error.message}</i>
+      </p>
+    </div>
+  );
+}
+src/main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import Root from "./routes/root";
+import ErrorPage from "./error-page";
+
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root/>,
+        errorElement: <ErrorPage />,
+
+    },
+]);
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>,
+)
+..................................
+
+The Contact Route UI
+Instead of a 404 "Not Found" page, we want to actually render something at the URLs we've linked to. For that, we need to make a new route.
+
+import { Form } from "react-router-dom";
+
+export default function Contact() {
+  const contact = {
+    first: "Your",
+    last: "Name",
+    avatar: "https://placekitten.com/g/200/200",
+    twitter: "your_handle",
+    notes: "Some notes",
+    favorite: true,
+  };
+
+  return (
+    <div id="contact">
+      <div>
+        <img
+          key={contact.avatar}
+          src={contact.avatar || null}
+        />
+      </div>
+
+      <div>
+        <h1>
+          {contact.first || contact.last ? (
+            <>
+              {contact.first} {contact.last}
+            </>
+          ) : (
+            <i>No Name</i>
+          )}{" "}
+          <Favorite contact={contact} />
+        </h1>
+
+        {contact.twitter && (
+          <p>
+            <a
+              target="_blank"
+              href={`https://twitter.com/${contact.twitter}`}
+            >
+              {contact.twitter}
+            </a>
+          </p>
+        )}
+
+        {contact.notes && <p>{contact.notes}</p>}
+
+        <div>
+          <Form action="edit">
+            <button type="submit">Edit</button>
+          </Form>
+          <Form
+            method="post"
+            action="destroy"
+            onSubmit={(event) => {
+              if (
+                !confirm(
+                  "Please confirm you want to delete this record."
+                )
+              ) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <button type="submit">Delete</button>
+          </Form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Favorite({ contact }) {
+  // yes, this is a `let` for later
+  let favorite = contact.favorite;
+  return (
+    <Form method="post">
+      <button
+        name="favorite"
+        value={favorite ? "false" : "true"}
+        aria-label={
+          favorite
+            ? "Remove from favorites"
+            : "Add to favorites"
+        }
+      >
+        {favorite ? "★" : "☆"}
+      </button>
+    </Form>
+  );
+}
+
+src/main.jsx
+/* existing imports */
+import Contact from "./routes/contact";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "contacts/:contactId",
+    element: <Contact />,
+  },
+]);
+....................................................................................
+
+Nested Layout:
+.............
+
+We want the contact component to render inside of the <Root> layout like this.
+
+src/main.jsx
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import Root from "./routes/root";
+import ErrorPage from "./error-page";
+import Contact from "./routes/contact";
+
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root />,
+        errorElement: <ErrorPage />,
+        children: [
+            {
+                path: "contacts/:contactId",
+                element: <Contact />,
+            },
+        ],
+    }
+]);
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>,
+)
+
+src/routes/Root.jsx
+import { Outlet } from "react-router-dom";
+
+export default function Root() {
+  return <div>
+    <h1>Home Page</h1>
+
+    <div id="detail">
+      <Outlet />
+    </div>
+  </div>
+}
+
+Client Side Routing
+You may or may not have noticed, but when we click the links in the sidebar, the browser is doing a full document request for the next URL instead of using React Router.
+
+Client side routing allows our app to update the URL without requesting another document from the server. Instead, the app can immediately render new UI. Let's make it happen with <Link>.
+
+import { Outlet, Link } from "react-router-dom";
+
+
+export default function Root() {
+  return <div>
+    <h1>Home Page</h1>
+
+    <nav>
+      <ul>
+        <li>
+          <Link to={`contacts/1`}>Your Name</Link>
+        </li>
+        <li>
+          <Link to={`contacts/2`}>Your Friend</Link>
+        </li>
+      </ul>
+    </nav>
+
+    <div id="detail">
+      <Outlet />
+    </div>
+  </div>
+}
+
